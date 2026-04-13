@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم سيرفر FiveM</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-bg: #1e1e1e;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --border: #333;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden;}
+        
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 18, 18, 0.95); display: flex; justify-content: center; align-items: center; z-index: 1000; flex-direction: column; }
+        .login-box { background-color: var(--panel-bg); padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border);}
+        .login-box h2 { color: var(--primary); margin-bottom: 20px; }
+        
+        #app-container { display: none; width: 100%; height: 100%; }
+        .sidebar { width: 250px; background-color: var(--panel-bg); padding: 20px; border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto;}
+        .sidebar h2 { color: var(--primary); text-align: center; font-size: 24px; margin-bottom: 10px;}
+        .user-id-display { text-align: center; background: rgba(99, 102, 241, 0.1); color: #818cf8; padding: 8px; border-radius: 6px; font-family: monospace; font-size: 14px; margin-bottom: 20px; border: 1px solid #4f46e5; }
+        
+        .nav-btn { background: none; border: none; color: var(--text-muted); padding: 15px; text-align: right; width: 100%; font-size: 16px; cursor: pointer; transition: 0.3s; margin-bottom: 10px; border-radius: 8px; font-weight: bold; display: none; }
+        .nav-btn:hover, .nav-btn.active { background-color: var(--primary); color: white; }
+
+        .content { flex: 1; padding: 40px; overflow-y: auto; }
+        .section { display: none; max-width: 900px; margin: 0 auto; background-color: var(--panel-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .section.active { display: block; animation: fadeIn 0.3s ease-in-out;}
+        .section h3 { margin-bottom: 25px; font-size: 22px; border-bottom: 2px solid var(--border); padding-bottom: 10px; color: var(--primary);}
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background-color: var(--bg-color); border: 1px solid var(--border); color: white; border-radius: 6px; outline: none; transition: 0.3s; }
+        
+        button.submit-btn { width: 100%; padding: 14px; background-color: var(--primary); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px;}
+        button.submit-btn:hover { background-color: var(--primary-hover); transform: translateY(-2px);}
+        
+        .alert { display: none; padding: 15px; border-radius: 6px; margin-top: 20px; text-align: center; font-size: 16px; font-weight: bold;}
+        .alert.success { background-color: rgba(5, 150, 105, 0.2); color: #10b981; border: 1px solid #059669; display: block; }
+        .alert.error { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; display: block; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: right; border-bottom: 1px solid var(--border); }
+        .badge { background: #374151; padding: 4px 8px; border-radius: 4px; font-family: monospace; color: #60a5fa; font-size: 16px;}
+        .role-badge { font-weight: bold; padding: 4px 8px; border-radius: 4px; font-size: 12px; background: rgba(255,255,255,0.1); }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>تسجيل الدخول للنظام</h2>
+            <div class="form-group">
+                <input type="text" id="loginIdInput" placeholder="أدخل الـ ID الخاص بك" onkeypress="if(event.key === 'Enter') checkLogin()">
+            </div>
+            <button class="submit-btn" onclick="checkLogin()">دخول</button>
+            <div id="loginAlert" class="alert" style="margin-top: 15px; padding: 10px; font-size: 14px;"></div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: rgba(99, 102, 241, 0.1); border: 1px dashed #6366f1; border-radius: 8px; color: #9ca3af; font-size: 14px;">
+                للحصول على صلاحية، أعط هذا الكود للإدارة:<br>
+                <strong id="myGeneratedCode" style="color: #6366f1; font-size: 22px; display: block; margin-top: 10px; letter-spacing: 2px;"></strong>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <div class="sidebar">
+            <h2>FiveM Panel</h2>
+            <div class="user-id-display" id="currentUserDisplay">ID: غير مسجل</div>
+            <div style="border-bottom: 1px solid var(--border); margin-bottom: 15px;"></div>
+
+            <button class="nav-btn" id="btn-add-player" onclick="switchTab('player-section')">إضافة لاعب جديد</button>
+            <button class="nav-btn" id="btn-list-players" onclick="switchTab('list-section'); loadPlayersList();">قائمة اللاعبين</button>
+            <button class="nav-btn" id="btn-give-role" onclick="switchTab('admin-section')">إدارة الرتب</button>
+            <button class="nav-btn" id="btn-list-admins" onclick="switchTab('admin-list-section'); loadAdminsList();">قائمة الإدارة</button>
+            <button class="nav-btn" id="btn-attendance" onclick="switchTab('attendance-section'); loadAttendanceList();">نشاط ومقابلات الإداريين</button>
+            <button class="nav-btn" id="btn-leaves" onclick="switchTab('leave-section'); loadLeaveList();">نظام الإجازات</button>
+            
+            <button class="nav-btn" style="display:block; margin-top: auto; background-color: var(--danger);" onclick="logout()">تسجيل خروج</button>
+        </div>
+
+        <div class="content">
+            <div id="player-section" class="section">
+                <h3>تسجيل بيانات لاعب جديد</h3>
+                <form id="playerForm">
+                    <div class="form-group">
+                        <label>كود الدخول (ID) الخاص باللاعب</label>
+                        <input type="text" id="playerCustomId" required placeholder="مثال: ID-1234">
+                    </div>
+                    <div class="form-group">
+                        <label>اسم اللاعب</label>
+                        <input type="text" id="playerName" required placeholder="مثال: أحمد">
+                    </div>
+                    <div class="form-group">
+                        <label>العمر</label>
+                        <input type="number" id="playerAge" required>
+                    </div>
+                    <div class="form-group">
+                        <label>رابط ستيم</label>
+                        <input type="url" id="steamLink" required>
+                    </div>
+                    <div class="form-group">
+                        <label>أيدي الديسكورد</label>
+                        <input type="text" id="discordId" required>
+                    </div>
+                    <button type="submit" class="submit-btn">حفظ في قاعدة البيانات</button>
+                    <div id="playerAlert" class="alert"></div>
+                </form>
+            </div>
+
+            <div id="list-section" class="section"><h3>قائمة اللاعبين المقبولين</h3><div id="playersTableContainer"></div></div>
+            <div id="admin-section" class="section">
+                <h3>إعطاء أو تغيير رتبة</h3>
+                <form id="adminForm">
+                    <div class="form-group"><label>رقم التعريف (ID)</label><input type="text" id="targetId" required></div>
+                    <div class="form-group">
+                        <label>الرتبة</label>
+                        <select id="targetRole">
+                            <option value="owner">مالك</option>
+                            <option value="moderator">مسؤول تسجيل</option>
+                            <option value="admin">مراقب إداريين</option>
+                            <option value="player">لاعب عادي</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="submit-btn">تحديث الرتبة</button>
+                    <div id="adminAlert" class="alert"></div>
+                </form>
+            </div>
+            <div id="admin-list-section" class="section"><h3>قائمة الإدارة</h3><div id="adminsTableContainer"></div></div>
+            <div id="attendance-section" class="section"><h3>نشاط الإداريين</h3><div id="attendanceTableContainer"></div></div>
+            <div id="leave-section" class="section"><h3>سجل الإجازات</h3><div id="leaveTableContainer"></div></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCwbx5ZaNFUzOSptSdrkQFuzuFBg9bnn4c",
+            authDomain: "hr-team-77b9f.firebaseapp.com",
+            projectId: "hr-team-77b9f",
+            storageBucket: "hr-team-77b9f.firebasestorage.app",
+            messagingSenderId: "621137033130",
+            appId: "1:621137033130:web:21f08cfe1488f5a1675dd3",
+            measurementId: "G-86RVRXV2TY"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let currentUser = null;
+
+        // توليد الكود الخاص بالجهاز وحفظه
+        document.addEventListener("DOMContentLoaded", () => {
+            let myCode = localStorage.getItem('myUserCode');
+            if (!myCode) {
+                myCode = 'ID-' + Math.floor(1000 + Math.random() * 9000);
+                localStorage.setItem('myUserCode', myCode);
+            }
+            document.getElementById('myGeneratedCode').innerText = myCode;
+            document.getElementById('loginIdInput').value = myCode;
+        });
+
+        window.checkLogin = async function() {
+            const inputId = document.getElementById('loginIdInput').value.trim();
+            const alertBox = document.getElementById('loginAlert');
+            if(!inputId) return;
+
+            alertBox.textContent = "جاري التحقق...";
+            alertBox.className = "alert success";
+
+            if(inputId === "OWNER-999") {
+                currentUser = { role: 'owner', id: 'OWNER-999' };
+                unlockDashboard();
+                return;
+            }
+
+            try {
+                const q = query(collection(db, "users"), where("customId", "==", inputId));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    alertBox.textContent = "هذا الـ ID غير مسجل أو ليس لديك صلاحية!";
+                    alertBox.className = "alert error";
+                    return;
+                }
+                const userData = querySnapshot.docs[0].data();
+                if(userData.role === 'player') {
+                    alertBox.textContent = "ليس لديك صلاحيات دخول.";
+                    alertBox.className = "alert error";
+                    return;
+                }
+                currentUser = { role: userData.role, id: userData.customId };
+                unlockDashboard();
+            } catch (e) { alertBox.className = "alert error"; }
+        };
+
+        function unlockDashboard() {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
+            document.getElementById('currentUserDisplay').innerHTML = `ID: <strong>${currentUser.id}</strong>`;
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.style.display = 'none');
+
+            if(currentUser.role === 'owner') {
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.style.display = 'block');
+                switchTab('player-section');
+            } else if (currentUser.role === 'moderator') {
+                document.getElementById('btn-add-player').style.display = 'block';
+                document.getElementById('btn-leaves').style.display = 'block';
+                switchTab('player-section');
+            } else if (currentUser.role === 'admin') {
+                document.getElementById('btn-attendance').style.display = 'block';
+                switchTab('attendance-section');
+            }
+        }
+
+        document.getElementById('playerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const customId = document.getElementById('playerCustomId').value.trim();
+            try {
+                await addDoc(collection(db, "users"), {
+                    customId: customId,
+                    name: document.getElementById('playerName').value,
+                    age: document.getElementById('playerAge').value,
+                    steam: document.getElementById('steamLink').value,
+                    discord: document.getElementById('discordId').value,
+                    role: 'player',
+                    date: new Date().toLocaleDateString('ar-EG')
+                });
+                alert('تم حفظ اللاعب بنجاح بالكود: ' + customId);
+                this.reset();
+            } catch (e) { alert('خطأ في الحفظ'); }
+        });
+
+        // دوال التبديل والتحميل (switchTab, loadPlayersList, etc.) تظل كما هي..
+        window.switchTab = function(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        };
+        window.logout = () => location.reload();
+    </script>
+</body>
+</html>
