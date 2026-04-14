@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم سيرفر FiveM</title>
+    <title>لوحة تحكم سيرفر FiveM - النسخة النهائية</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -16,51 +16,58 @@
             --danger: #ef4444;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden;}
         
-        /* شاشة تسجيل الدخول */
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 18, 18, 0.95); display: flex; justify-content: center; align-items: center; z-index: 1000; flex-direction: column; }
-        .login-box { background-color: var(--panel-bg); padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border);}
-        .login-box h2 { color: var(--primary); margin-bottom: 20px; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; flex-direction: row; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; overflow-y: auto; }
+            .sidebar { width: 100% !important; height: auto !important; border-left: none !important; border-bottom: 1px solid var(--border); }
+            .content { padding: 15px !important; }
+            .section { padding: 15px !important; }
+            table { display: block; overflow-x: auto; white-space: nowrap; }
+        }
+
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 18, 18, 0.98); display: flex; justify-content: center; align-items: center; z-index: 1000; flex-direction: column; padding: 20px; }
+        .login-box { background-color: var(--panel-bg); padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border);}
         
-        /* واجهة الموقع */
         #app-container { display: none; width: 100%; height: 100%; }
 
-        .sidebar { width: 250px; background-color: var(--panel-bg); padding: 20px; border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto;}
-        .sidebar h2 { color: var(--primary); text-align: center; font-size: 24px; margin-bottom: 10px;}
-        .user-id-display { text-align: center; background: rgba(99, 102, 241, 0.1); color: #818cf8; padding: 8px; border-radius: 6px; font-family: monospace; font-size: 14px; margin-bottom: 20px; border: 1px solid #4f46e5; }
+        .sidebar { width: 280px; background-color: var(--panel-bg); padding: 20px; border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; transition: 0.3s; }
+        .sidebar h2 { color: var(--primary); text-align: center; font-size: 22px; margin-bottom: 10px;}
+        .user-id-display { text-align: center; background: rgba(99, 102, 241, 0.1); color: #818cf8; padding: 8px; border-radius: 6px; font-family: monospace; font-size: 13px; margin-bottom: 20px; border: 1px solid #4f46e5; }
         
-        .nav-btn { background: none; border: none; color: var(--text-muted); padding: 15px; text-align: right; width: 100%; font-size: 16px; cursor: pointer; transition: 0.3s; margin-bottom: 10px; border-radius: 8px; font-weight: bold; display: none; }
+        .nav-btn { background: none; border: none; color: var(--text-muted); padding: 12px; text-align: right; width: 100%; font-size: 15px; cursor: pointer; transition: 0.3s; margin-bottom: 8px; border-radius: 8px; font-weight: bold; display: none; }
         .nav-btn:hover, .nav-btn.active { background-color: var(--primary); color: white; }
 
-        .content { flex: 1; padding: 40px; overflow-y: auto; }
-        .section { display: none; max-width: 900px; margin: 0 auto; background-color: var(--panel-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .section.active { display: block; animation: fadeIn 0.3s ease-in-out;}
-        .section h3 { margin-bottom: 25px; font-size: 22px; border-bottom: 2px solid var(--border); padding-bottom: 10px; color: var(--primary);}
+        .content { flex: 1; padding: 30px; overflow-y: auto; background-image: radial-gradient(circle at center, #1a1a1a 0%, #121212 100%); }
+        .section { display: none; max-width: 1000px; margin: 0 auto; background-color: var(--panel-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid var(--border); }
+        .section.active { display: block; animation: fadeIn 0.4s ease-out;}
+        .section h3 { margin-bottom: 20px; font-size: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; color: var(--primary);}
 
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-muted); }
         .form-group input, .form-group select { width: 100%; padding: 12px; background-color: var(--bg-color); border: 1px solid var(--border); color: white; border-radius: 6px; outline: none; transition: 0.3s; }
         .form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 5px rgba(99, 102, 241, 0.5);}
         
-        button.submit-btn { width: 100%; padding: 14px; background-color: var(--primary); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px;}
+        .search-box { width: 100%; padding: 10px; margin-bottom: 15px; background-color: #2a2a2a; border: 1px solid var(--border); color: white; border-radius: 6px; outline: none; font-size: 14px; }
+        .search-box:focus { border-color: var(--primary); }
+
+        button.submit-btn { width: 100%; padding: 12px; background-color: var(--primary); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px;}
         button.submit-btn:hover { background-color: var(--primary-hover); transform: translateY(-2px);}
-        button.small-btn { padding: 8px 12px; background-color: #059669; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button.small-btn:hover { background-color: #047857; }
         
-        .alert { display: none; padding: 15px; border-radius: 6px; margin-top: 20px; text-align: center; font-size: 16px; font-weight: bold;}
+        .alert { display: none; padding: 12px; border-radius: 6px; margin-top: 15px; text-align: center; font-size: 14px; font-weight: bold;}
         .alert.success { background-color: rgba(5, 150, 105, 0.2); color: #10b981; border: 1px solid #059669; display: block; }
         .alert.error { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; display: block; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .table-container { overflow-x: auto; width: 100%; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th, td { padding: 12px; text-align: right; border-bottom: 1px solid var(--border); }
-        th { color: var(--text-muted); font-size: 14px; }
-        td { font-size: 15px; }
-        .empty-msg { text-align: center; color: var(--text-muted); padding: 20px; font-style: italic; }
-        .badge { background: #374151; padding: 4px 8px; border-radius: 4px; font-family: monospace; color: #60a5fa; font-size: 16px;}
-        .role-badge { font-weight: bold; padding: 4px 8px; border-radius: 4px; font-size: 12px; background: rgba(255,255,255,0.1); }
-        a.steam-link { color: var(--primary); text-decoration: none; font-weight: bold; padding: 5px 10px; background: rgba(99, 102, 241, 0.1); border-radius: 4px; }
-        a.steam-link:hover { background: rgba(99, 102, 241, 0.3); }
+        th { color: var(--text-muted); font-size: 13px; background-color: rgba(0,0,0,0.2); }
+        
+        .badge { background: #374151; padding: 4px 8px; border-radius: 4px; font-family: monospace; color: #60a5fa; font-size: 14px;}
+        .small-btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; font-size: 12px; transition: 0.2s; }
+        a.steam-link { color: #6366f1; text-decoration: none; font-weight: bold; font-size: 13px; border: 1px solid #6366f1; padding: 3px 8px; border-radius: 4px; transition: 0.3s; }
+        a.steam-link:hover { background: #6366f1; color: white; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -69,150 +76,104 @@
 
     <div id="login-overlay">
         <div class="login-box">
-            <h2>تسجيل الدخول للنظام</h2>
+            <h2 style="margin-bottom: 10px;">FiveM Admin System</h2>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">يرجى إدخال الكود المعتمد للدخول</p>
             <div class="form-group">
                 <input type="text" id="loginIdInput" placeholder="أدخل الـ ID الخاص بك" onkeypress="if(event.key === 'Enter') checkLogin()">
             </div>
-            <button class="submit-btn" onclick="checkLogin()">دخول</button>
-            <div id="loginAlert" class="alert" style="margin-top: 15px; padding: 10px; font-size: 14px;"></div>
+            <button class="submit-btn" onclick="checkLogin()">تسجيل الدخول</button>
+            <div id="loginAlert" class="alert"></div>
             
-            <div style="margin-top: 20px; padding: 15px; background: rgba(99, 102, 241, 0.1); border: 1px dashed #6366f1; border-radius: 8px; color: #9ca3af; font-size: 14px;">
-                للحصول على صلاحية، أعط هذا الكود للإدارة:<br>
-                <strong id="myGeneratedCode" style="color: #6366f1; font-size: 22px; display: block; margin-top: 10px; letter-spacing: 2px;"></strong>
+            <div style="margin-top: 25px; padding: 15px; background: rgba(99, 102, 241, 0.05); border: 1px dashed #4f46e5; border-radius: 8px;">
+                <span style="color: var(--text-muted); font-size: 12px;">كود جهازك الحالي (أعطه للإدارة):</span>
+                <strong id="myGeneratedCode" style="color: var(--primary); font-size: 20px; display: block; margin-top: 8px; letter-spacing: 1px;">جاري التوليد...</strong>
             </div>
         </div>
     </div>
 
     <div id="app-container">
         <div class="sidebar">
-            <h2>FiveM Panel</h2>
-            <div class="user-id-display" id="currentUserDisplay">ID: غير مسجل</div>
-            <div style="border-bottom: 1px solid var(--border); margin-bottom: 15px;"></div>
+            <h2>لوحة التحكم</h2>
+            <div class="user-id-display" id="currentUserDisplay">جاري التحميل...</div>
 
-            <button class="nav-btn" id="btn-add-player" onclick="switchTab('player-section')">إضافة لاعب جديد</button>
-            <button class="nav-btn" id="btn-list-players" onclick="switchTab('list-section'); loadPlayersList();">قائمة اللاعبين</button>
-            <button class="nav-btn" id="btn-give-role" onclick="switchTab('admin-section')">إدارة الرتب</button>
-            <button class="nav-btn" id="btn-list-admins" onclick="switchTab('admin-list-section'); loadAdminsList();">قائمة الإدارة</button>
-            <button class="nav-btn" id="btn-attendance" onclick="switchTab('attendance-section'); loadAttendanceList();">نشاط ومقابلات الإداريين</button>
-            <button class="nav-btn" id="btn-leaves" onclick="switchTab('leave-section'); loadLeaveList();">نظام الإجازات</button>
+            <button class="nav-btn" id="btn-add-player" onclick="switchTab('player-section')">➕ إضافة لاعب جديد</button>
+            <button class="nav-btn" id="btn-list-players" onclick="switchTab('list-section'); loadPlayersList();">👥 قائمة اللاعبين</button>
+            <button class="nav-btn" id="btn-give-role" onclick="switchTab('admin-section')">🛡️ إدارة الرتب</button>
+            <button class="nav-btn" id="btn-list-admins" onclick="switchTab('admin-list-section'); loadAdminsList();">⭐ طاقم الإدارة</button>
+            <button class="nav-btn" id="btn-attendance" onclick="switchTab('attendance-section'); loadAttendanceList();">📅 نشاط الإداريين</button>
+            <button class="nav-btn" id="btn-leaves" onclick="switchTab('leave-section'); loadLeaveList();">🏖️ نظام الإجازات</button>
             
-            <button class="nav-btn" style="display:block; margin-top: auto; background-color: var(--danger);" onclick="logout()">تسجيل خروج</button>
+            <button class="nav-btn" style="display:block; margin-top: auto; background-color: var(--danger); color: white;" onclick="logout()">🚪 تسجيل خروج</button>
         </div>
 
         <div class="content">
-            
             <div id="player-section" class="section">
                 <h3>تسجيل بيانات لاعب جديد</h3>
                 <form id="playerForm">
-                    <div class="form-group">
-                        <label>كود الدخول (ID) الخاص باللاعب</label>
-                        <input type="text" id="playerCustomId" required placeholder="مثال: ID-1234">
-                    </div>
-                    <div class="form-group">
-                        <label>اسم اللاعب</label>
-                        <input type="text" id="playerName" required placeholder="مثال: أحمد">
-                    </div>
-                    <div class="form-group">
-                        <label>العمر</label>
-                        <input type="number" id="playerAge" required placeholder="مثال: 20">
-                    </div>
-                    <div class="form-group">
-                        <label>رابط ستيم (Steam Link)</label>
-                        <input type="url" id="steamLink" required placeholder="https://steamcommunity.com/id/...">
-                    </div>
-                    <div class="form-group">
-                        <label>أيدي الديسكورد (Discord ID)</label>
-                        <input type="text" id="discordId" required placeholder="مثال: 123456789012345678">
-                    </div>
-                    <button type="submit" class="submit-btn">حفظ في قاعدة البيانات</button>
+                    <div class="form-group"><label>كود الدخول (ID) الخاص باللاعب</label><input type="text" id="playerCustomId" required></div>
+                    <div class="form-group"><label>اسم اللاعب</label><input type="text" id="playerName" required></div>
+                    <div class="form-group"><label>العمر</label><input type="number" id="playerAge" required></div>
+                    <div class="form-group"><label>رابط ستيم (Steam Link)</label><input type="url" id="steamLink" required placeholder="https://steamcommunity.com/profiles/..."></div>
+                    <div class="form-group"><label>أيدي الديسكورد</label><input type="text" id="discordId" required></div>
+                    <button type="submit" class="submit-btn">حفظ البيانات</button>
                     <div id="playerAlert" class="alert"></div>
                 </form>
             </div>
 
             <div id="list-section" class="section">
                 <h3>قائمة اللاعبين المقبولين</h3>
-                <div id="playersTableContainer">جاري التحميل...</div>
+                <input type="text" id="searchPlayers" class="search-box" placeholder="🔍 بحث بالاسم أو الـ ID أو الديسكورد..." onkeyup="searchTable('searchPlayers', 'playersTableContainer')">
+                <div class="table-container" id="playersTableContainer"></div>
             </div>
 
             <div id="admin-section" class="section">
-                <h3>إعطاء أو تغيير رتبة عبر ID</h3>
+                <h3>إدارة الصلاحيات والرتب</h3>
                 <form id="adminForm">
+                    <div class="form-group"><label>أدخل الـ ID الخاص بالشخص</label><input type="text" id="targetId" required></div>
                     <div class="form-group">
-                        <label>رقم التعريف (ID) الخاص بالشخص</label>
-                        <input type="text" id="targetId" required placeholder="مثال: ID-1234">
-                    </div>
-                    <div class="form-group">
-                        <label>اختر الرتبة الجديدة</label>
+                        <label>الرتبة الجديدة</label>
                         <select id="targetRole">
-                            <option value="owner">مالك (تحكم كامل)</option>
-                            <option value="moderator">مسؤول تسجيل (إضافة لاعبين وإجازات فقط)</option>
-                            <option value="admin">مراقب إداريين (حضور الإداريين فقط)</option>
-                            <option value="player">لاعب عادي (سحب الصلاحيات)</option>
+                            <option value="owner">مالك (صلاحية كاملة)</option>
+                            <option value="moderator">مسؤول تسجيل</option>
+                            <option value="admin">مراقب إداريين</option>
+                            <option value="player">سحب الصلاحيات (لاعب)</option>
                         </select>
                     </div>
-                    <button type="submit" class="submit-btn">تحديث الرتبة</button>
+                    <button type="submit" class="submit-btn">تحديث الرتبة الآن</button>
                     <div id="adminAlert" class="alert"></div>
                 </form>
             </div>
 
             <div id="admin-list-section" class="section">
-                <h3>قائمة الإدارة (Admins)</h3>
-                <div id="adminsTableContainer">جاري التحميل...</div>
+                <h3>طاقم الإدارة الفعلي</h3>
+                <input type="text" id="searchAdmins" class="search-box" placeholder="🔍 بحث باسم الإداري أو الـ ID..." onkeyup="searchTable('searchAdmins', 'adminsTableContainer')">
+                <div class="table-container" id="adminsTableContainer"></div>
             </div>
 
             <div id="attendance-section" class="section">
-                <h3>تسجيل نشاط إداري جديد</h3>
+                <h3>تسجيل نشاط إداري</h3>
                 <form id="adminActivityForm">
-                    <div class="form-group">
-                        <label>اسم الإداري</label>
-                        <input type="text" id="activityAdminName" required placeholder="اكتب اسم الإداري هنا">
-                    </div>
-                    <div class="form-group">
-                        <label>حالة الحضور</label>
-                        <select id="activityAttendance">
-                            <option value="حضر">حضر</option>
-                            <option value="لم يحضر">لم يحضر</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>التاريخ</label>
-                        <input type="date" id="activityDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label>عدد المقابلات التي قام بها</label>
-                        <input type="number" id="activityInterviews" required placeholder="مثال: 5" min="0" value="0">
-                    </div>
-                    <button type="submit" class="submit-btn">حفظ وإصدار ID</button>
+                    <div class="form-group"><label>اسم الإداري</label><input type="text" id="activityAdminName" required></div>
+                    <div class="form-group"><label>الحالة</label><select id="activityAttendance"><option>حضر</option><option>لم يحضر</option></select></div>
+                    <div class="form-group"><label>التاريخ</label><input type="date" id="activityDate" required></div>
+                    <div class="form-group"><label>المقابلات</label><input type="number" id="activityInterviews" value="0"></div>
+                    <button type="submit" class="submit-btn">تسجيل النشاط</button>
                     <div id="adminActivityAlert" class="alert"></div>
                 </form>
-
-                <h3 style="margin-top: 40px;">سجل نشاط الإداريين السابق</h3>
-                <div id="attendanceTableContainer">جاري التحميل...</div>
+                <div class="table-container" style="margin-top:20px;" id="attendanceTableContainer"></div>
             </div>
 
             <div id="leave-section" class="section">
-                <h3>تسجيل إجازة جديدة</h3>
+                <h3>طلب إجازة</h3>
                 <form id="leaveForm">
-                    <div class="form-group">
-                        <label>أيدي الديسكورد (Discord ID)</label>
-                        <input type="text" id="leaveDiscordId" required placeholder="مثال: 123456789012345678">
-                    </div>
-                    <div class="form-group">
-                        <label>من تاريخ</label>
-                        <input type="date" id="leaveStartDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label>إلى تاريخ</label>
-                        <input type="date" id="leaveEndDate" required>
-                    </div>
-                    <button type="submit" class="submit-btn">حفظ الإجازة وإصدار رقم الطلب</button>
+                    <div class="form-group"><label>ديسكورد ID</label><input type="text" id="leaveDiscordId" required></div>
+                    <div class="form-group"><label>من تاريخ</label><input type="date" id="leaveStartDate" required></div>
+                    <div class="form-group"><label>إلى تاريخ</label><input type="date" id="leaveEndDate" required></div>
+                    <button type="submit" class="submit-btn">تقديم الطلب</button>
                     <div id="leaveAlert" class="alert"></div>
                 </form>
-
-                <h3 style="margin-top: 40px;">سجل الإجازات</h3>
-                <div id="leaveTableContainer">جاري التحميل...</div>
+                <div class="table-container" style="margin-top:20px;" id="leaveTableContainer"></div>
             </div>
-
         </div>
     </div>
 
@@ -220,6 +181,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+        // إعدادات قاعدة البيانات الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyCwbx5ZaNFUzOSptSdrkQFuzuFBg9bnn4c",
             authDomain: "hr-team-77b9f.firebaseapp.com",
@@ -232,24 +194,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
         let currentUser = null;
-
-        window.switchTab = function(tabId) {
-            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            if(event && event.target) {
-                event.target.classList.add('active');
-            }
-        };
-
-        function showAlert(elementId, message, type="success") {
-            const alert = document.getElementById(elementId);
-            alert.textContent = message;
-            alert.className = `alert ${type}`;
-            setTimeout(() => { alert.style.display = 'none'; alert.className = "alert"; }, 6000);
-        }
 
         // توليد الكود الخاص بالجهاز والدخول التلقائي
         document.addEventListener("DOMContentLoaded", () => {
@@ -258,22 +203,21 @@
                 myCode = 'ID-' + Math.floor(1000 + Math.random() * 9000);
                 localStorage.setItem('myUserCode', myCode);
             }
-            if(document.getElementById('myGeneratedCode')) document.getElementById('myGeneratedCode').innerText = myCode;
-            if(document.getElementById('loginIdInput')) document.getElementById('loginIdInput').value = myCode;
+            document.getElementById('myGeneratedCode').innerText = myCode;
+            document.getElementById('loginIdInput').value = myCode;
 
-            // الدخول التلقائي إذا كان مسجل مسبقاً
             if(localStorage.getItem('isLoggedIn') === 'true') {
                 checkLogin();
             }
         });
 
+        // التحقق من الدخول (مع دعم الحروف الكبيرة/الصغيرة)
         window.checkLogin = async function() {
-            const inputId = document.getElementById('loginIdInput').value.trim();
+            const inputId = document.getElementById('loginIdInput').value.trim().toUpperCase();
             const alertBox = document.getElementById('loginAlert');
-            
             if(!inputId) return;
 
-            alertBox.textContent = "جاري التحقق...";
+            alertBox.textContent = "جاري التحقق من الصلاحيات...";
             alertBox.className = "alert success";
 
             if(inputId === "OWNER-999") {
@@ -286,53 +230,51 @@
             try {
                 const q = query(collection(db, "users"), where("customId", "==", inputId));
                 const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    alertBox.textContent = "هذا الـ ID غير مسجل أو ليس لديك صلاحية!";
-                    alertBox.className = "alert error";
-                    localStorage.setItem('isLoggedIn', 'false');
-                    return;
-                }
-
-                const userData = querySnapshot.docs[0].data();
                 
-                if(userData.role === 'player') {
-                    alertBox.textContent = "ليس لديك صلاحيات الدخول لهذه اللوحة.";
+                if (querySnapshot.empty) {
+                    alertBox.textContent = "عذراً، هذا الكود غير مسجل أو لا يملك صلاحية دخول.";
                     alertBox.className = "alert error";
                     localStorage.setItem('isLoggedIn', 'false');
                     return;
                 }
-
+                
+                const userData = querySnapshot.docs[0].data();
+                if(userData.role === 'player') {
+                    alertBox.textContent = "تم العثور على الكود، لكنه لا يملك رتبة إدارية.";
+                    alertBox.className = "alert error";
+                    localStorage.setItem('isLoggedIn', 'false');
+                    return;
+                }
+                
                 currentUser = { role: userData.role, id: userData.customId };
                 localStorage.setItem('isLoggedIn', 'true');
                 unlockDashboard();
-
-            } catch (error) {
-                alertBox.textContent = "حدث خطأ: " + error.message;
-                alertBox.className = "alert error";
+            } catch (error) { 
+                alertBox.textContent = "خطأ في الاتصال: " + error.message; 
+                alertBox.className = "alert error"; 
             }
         };
 
         function unlockDashboard() {
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('app-container').style.display = 'flex';
-            document.getElementById('currentUserDisplay').innerHTML = `تسجيل الدخول كـ: <br> <strong>${currentUser.id}</strong>`;
+            document.getElementById('currentUserDisplay').innerHTML = `ID: <strong>${currentUser.id}</strong><br><span style="font-size:11px; color:var(--text-muted);">Role: ${currentUser.role}</span>`;
             document.querySelectorAll('.nav-btn').forEach(btn => btn.style.display = 'none');
 
+            const btns = {
+                'owner': ['.nav-btn'],
+                'moderator': ['#btn-add-player', '#btn-leaves'],
+                'admin': ['#btn-attendance', '#btn-list-admins']
+            };
+
             if(currentUser.role === 'owner') {
-                document.querySelectorAll('.nav-btn').forEach(btn => btn.style.display = 'block');
+                document.querySelectorAll('.nav-btn').forEach(b => b.style.display = 'block');
                 switchTab('player-section');
-            } 
-            else if (currentUser.role === 'moderator') {
-                document.getElementById('btn-add-player').style.display = 'block';
-                document.getElementById('btn-leaves').style.display = 'block';
-                switchTab('player-section');
-            }
-            else if (currentUser.role === 'admin') {
-                document.getElementById('btn-attendance').style.display = 'block';
-                document.getElementById('btn-list-admins').style.display = 'block';
-                switchTab('attendance-section');
-                loadAttendanceList();
+            } else {
+                btns[currentUser.role].forEach(selector => {
+                    document.querySelector(selector).style.display = 'block';
+                });
+                switchTab(btns[currentUser.role][0].replace('#btn-', '') + '-section');
             }
         }
 
@@ -341,187 +283,184 @@
             location.reload();
         };
 
-        // إضافة لاعب
+        // إضافة لاعب 
         document.getElementById('playerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const customId = document.getElementById('playerCustomId').value.trim();
-            const pName = document.getElementById('playerName').value;
+            const alert = document.getElementById('playerAlert');
+            const newId = document.getElementById('playerCustomId').value.trim().toUpperCase();
+            
             try {
                 await addDoc(collection(db, "users"), {
-                    customId: customId,
-                    name: pName,
+                    customId: newId,
+                    name: document.getElementById('playerName').value,
                     age: document.getElementById('playerAge').value,
-                    steam: document.getElementById('steamLink').value,
+                    steam: document.getElementById('steamLink').value, 
                     discord: document.getElementById('discordId').value,
                     role: 'player',
                     date: new Date().toLocaleDateString('ar-EG')
                 });
-                showAlert('playerAlert', `تم حفظ اللاعب [ ${pName} ] بالكود: ${customId}`);
+                alert.textContent = "تم الحفظ بنجاح!";
+                alert.className = "alert success";
                 this.reset();
-            } catch (error) {
-                showAlert('playerAlert', 'حدث خطأ: ' + error.message, 'error');
-            }
+            } catch (e) { alert.textContent = "خطأ في الحفظ"; alert.className = "alert error"; }
         });
 
         // قائمة اللاعبين
         window.loadPlayersList = async function() {
             const container = document.getElementById('playersTableContainer');
-            container.innerHTML = "جاري جلب البيانات...";
+            container.innerHTML = "جاري جلب القائمة...";
             const q = query(collection(db, "users"), where("role", "==", "player"));
-            const querySnapshot = await getDocs(q);
-            if (querySnapshot.empty) { container.innerHTML = '<div class="empty-msg">لا يوجد لاعبين.</div>'; return; }
-
-            let html = `<table><thead><tr><th>ID</th><th>الاسم</th><th>العمر</th><th>الديسكورد</th><th>ستيم</th><th>إجراء</th></tr></thead><tbody>`;
-            querySnapshot.forEach((document) => {
-                const data = document.data();
-                html += `<tr>
-                            <td><span class="badge">${data.customId}</span></td>
-                            <td>${data.name}</td><td>${data.age}</td><td>${data.discord}</td>
-                            <td><a href="${data.steam}" target="_blank" class="steam-link">الرابط</a></td>
-                            <td><button class="small-btn" style="background-color: var(--danger);" onclick="deleteUser('${document.id}')">حذف</button></td>
-                         </tr>`;
-            });
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-        };
-
-        // إدارة الرتب
-        document.getElementById('adminForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const targetId = document.getElementById('targetId').value.trim();
-            const newRole = document.getElementById('targetRole').value;
+            const snap = await getDocs(q);
             
-            const q = query(collection(db, "users"), where("customId", "==", targetId));
-            const querySnapshot = await getDocs(q);
+            if (snap.empty) { container.innerHTML = "لا يوجد لاعبين مضافين."; return; }
 
-            if (querySnapshot.empty) {
-                showAlert('adminAlert', 'لم يتم العثور على أي شخص بهذا الـ ID', 'error');
-                return;
-            }
-
-            const userDoc = querySnapshot.docs[0];
-            await updateDoc(doc(db, "users", userDoc.id), { role: newRole });
-            showAlert('adminAlert', `تم تحديث رتبة صاحب الـ ${targetId} بنجاح!`);
-            this.reset();
-        });
+            let h = `<table><thead><tr><th>ID</th><th>الاسم</th><th>الديسكورد</th><th>ستيم</th><th>إجراء</th></tr></thead><tbody>`;
+            snap.forEach((d) => {
+                const data = d.data();
+                h += `<tr>
+                    <td><span class="badge">${data.customId}</span></td>
+                    <td>${data.name}</td>
+                    <td>${data.discord}</td>
+                    <td><a href="${data.steam}" target="_blank" class="steam-link">Steam</a></td>
+                    <td><button class="small-btn" style="background:var(--danger)" onclick="delDoc('users','${d.id}','players')">حذف</button></td>
+                </tr>`;
+            });
+            container.innerHTML = h + `</tbody></table>`;
+        };
 
         // قائمة الإدارة
         window.loadAdminsList = async function() {
             const container = document.getElementById('adminsTableContainer');
-            container.innerHTML = "جاري جلب البيانات...";
-            
+            container.innerHTML = "جاري التحميل...";
             const q = query(collection(db, "users"), where("role", "!=", "player"));
-            const querySnapshot = await getDocs(q);
+            const snap = await getDocs(q);
             
-            if (querySnapshot.empty) { container.innerHTML = '<div class="empty-msg">لا يوجد إداريين.</div>'; return; }
-
-            const roleNames = {
-                'owner': 'مالك',
-                'admin': 'مراقب إداريين',
-                'moderator': 'مسؤول تسجيل'
-            };
-
-            let html = `<table><thead><tr><th>ID</th><th>الاسم</th><th>الديسكورد</th><th>الرتبة</th><th>إجراء</th></tr></thead><tbody>`;
-            querySnapshot.forEach((document) => {
-                const data = document.data();
-                html += `<tr>
-                            <td><span class="badge">${data.customId}</span></td>
-                            <td>${data.name}</td>
-                            <td>${data.discord}</td>
-                            <td><span class="role-badge">${roleNames[data.role] || data.role}</span></td>
-                            <td><button class="small-btn" style="background-color: var(--danger);" onclick="deleteUser('${document.id}')">حذف</button></td>
-                         </tr>`;
+            let h = `<table><thead><tr><th>ID</th><th>الاسم</th><th>الرتبة</th><th>إجراء</th></tr></thead><tbody>`;
+            snap.forEach((d) => {
+                const data = d.data();
+                h += `<tr>
+                    <td><span class="badge">${data.customId}</span></td>
+                    <td>${data.name}</td>
+                    <td>${data.role}</td>
+                    <td><button class="small-btn" style="background:var(--danger)" onclick="delDoc('users','${d.id}','admins')">حذف</button></td>
+                </tr>`;
             });
-            html += `</tbody></table>`;
-            container.innerHTML = html;
+            container.innerHTML = h + `</tbody></table>`;
         };
 
-        // دالة الحذف الشاملة
-        window.deleteUser = async function(docId) {
-            if(confirm('هل أنت متأكد من أنك تريد حذف هذا الشخص نهائياً من قاعدة البيانات؟')) {
-                try {
-                    await deleteDoc(doc(db, "users", docId));
-                    alert('تم الحذف بنجاح!');
-                    if(document.getElementById('list-section').classList.contains('active')) loadPlayersList();
-                    if(document.getElementById('admin-list-section').classList.contains('active')) loadAdminsList();
-                } catch (error) {
-                    alert('حدث خطأ أثناء الحذف: ' + error.message);
+        // تحديث الرتبة
+        document.getElementById('adminForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('targetId').value.trim().toUpperCase();
+            const role = document.getElementById('targetRole').value;
+            const alertBox = document.getElementById('adminAlert');
+
+            const q = query(collection(db, "users"), where("customId", "==", id));
+            const snap = await getDocs(q);
+            
+            if(snap.empty) {
+                alertBox.textContent = "هذا الـ ID غير مسجل في قاعدة البيانات!";
+                alertBox.className = "alert error";
+                return;
+            }
+            
+            await updateDoc(doc(db, "users", snap.docs[0].id), { role: role });
+            alertBox.textContent = "تم تحديث الرتبة بنجاح!";
+            alertBox.className = "alert success";
+            this.reset();
+        });
+
+        // الحذف
+        window.delDoc = async function(coll, id, type) {
+            if(confirm("هل أنت متأكد من الحذف النهائي؟")) {
+                await deleteDoc(doc(db, coll, id));
+                if(type === 'players') loadPlayersList();
+                else loadAdminsList();
+            }
+        };
+
+        // ميزة البحث في الجداول
+        window.searchTable = function(inputId, tableContainerId) {
+            const input = document.getElementById(inputId).value.toUpperCase();
+            const table = document.querySelector(`#${tableContainerId} table`);
+            if(!table) return;
+            const tr = table.getElementsByTagName("tr");
+            for (let i = 1; i < tr.length; i++) {
+                let textContent = tr[i].textContent || tr[i].innerText;
+                if (textContent.toUpperCase().indexOf(input) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
                 }
             }
         };
 
-        // نشاط الإداريين
-        function generateShortIdActivity() {
-            return 'ACT-' + Math.floor(1000 + Math.random() * 9000);
-        }
+        window.switchTab = function(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        };
 
+        // نشاط الإداريين
         document.getElementById('adminActivityForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const shortId = generateShortIdActivity(); 
             try {
                 await addDoc(collection(db, "admin_activities"), {
-                    customId: shortId,
+                    customId: 'ACT-' + Math.floor(1000 + Math.random() * 9000),
                     name: document.getElementById('activityAdminName').value,
                     attendance: document.getElementById('activityAttendance').value,
                     date: document.getElementById('activityDate').value,
                     interviews: parseInt(document.getElementById('activityInterviews').value)
                 });
-                showAlert('adminActivityAlert', `تم الحفظ بنجاح! الـ ID للعملية: [ ${shortId} ]`);
+                document.getElementById('adminActivityAlert').textContent = "تم التسجيل بنجاح!";
+                document.getElementById('adminActivityAlert').className = "alert success";
                 this.reset();
                 loadAttendanceList(); 
-            } catch (error) {
-                showAlert('adminActivityAlert', 'خطأ: ' + error.message, 'error');
-            }
+            } catch (e) { console.error(e); }
         });
 
         window.loadAttendanceList = async function() {
             const container = document.getElementById('attendanceTableContainer');
-            container.innerHTML = "جاري جلب البيانات...";
-            const querySnapshot = await getDocs(collection(db, "admin_activities"));
-            if (querySnapshot.empty) { container.innerHTML = '<div class="empty-msg">لا يوجد سجلات.</div>'; return; }
-
-            let html = `<table><thead><tr><th>ID العملية</th><th>الاسم</th><th>الحضور</th><th>التاريخ</th><th>المقابلات</th></tr></thead><tbody>`;
-            querySnapshot.forEach((document) => {
-                const data = document.data();
-                html += `<tr><td><span class="badge">${data.customId}</span></td><td>${data.name}</td><td>${data.attendance}</td><td>${data.date}</td><td>${data.interviews}</td></tr>`;
+            const snap = await getDocs(collection(db, "admin_activities"));
+            if (snap.empty) { container.innerHTML = "لا يوجد سجلات."; return; }
+            let h = `<table><thead><tr><th>الاسم</th><th>الحضور</th><th>التاريخ</th><th>المقابلات</th><th>إجراء</th></tr></thead><tbody>`;
+            snap.forEach((d) => {
+                const data = d.data();
+                h += `<tr><td>${data.name}</td><td>${data.attendance}</td><td>${data.date}</td><td>${data.interviews}</td>
+                      <td><button class="small-btn" style="background:var(--danger)" onclick="delDoc('admin_activities','${d.id}','attendance')">حذف</button></td></tr>`;
             });
-            html += `</tbody></table>`;
-            container.innerHTML = html;
+            container.innerHTML = h + `</tbody></table>`;
         };
 
         // نظام الإجازات
         document.getElementById('leaveForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const shortId = 'LV-' + Math.floor(1000 + Math.random() * 9000);
             try {
                 await addDoc(collection(db, "leaves"), {
-                    customId: shortId,
+                    customId: 'LV-' + Math.floor(1000 + Math.random() * 9000),
                     discordId: document.getElementById('leaveDiscordId').value,
                     startDate: document.getElementById('leaveStartDate').value,
                     endDate: document.getElementById('leaveEndDate').value,
                     requestDate: new Date().toLocaleDateString('ar-EG')
                 });
-                showAlert('leaveAlert', `تم حفظ الإجازة! رقم الطلب: [ ${shortId} ]`);
+                document.getElementById('leaveAlert').textContent = "تم تسجيل الإجازة!";
+                document.getElementById('leaveAlert').className = "alert success";
                 this.reset();
                 loadLeaveList(); 
-            } catch (error) {
-                showAlert('leaveAlert', 'خطأ: ' + error.message, 'error');
-            }
+            } catch (e) { console.error(e); }
         });
 
         window.loadLeaveList = async function() {
             const container = document.getElementById('leaveTableContainer');
-            container.innerHTML = "جاري جلب البيانات...";
-            const querySnapshot = await getDocs(collection(db, "leaves"));
-            if (querySnapshot.empty) { container.innerHTML = '<div class="empty-msg">لا يوجد إجازات.</div>'; return; }
-
-            let html = `<table><thead><tr><th>رقم الطلب</th><th>أيدي الديسكورد</th><th>من تاريخ</th><th>إلى تاريخ</th><th>تاريخ التسجيل</th></tr></thead><tbody>`;
-            querySnapshot.forEach((document) => {
-                const data = document.data();
-                html += `<tr><td><span class="badge" style="background:#059669;">${data.customId}</span></td><td>${data.discordId}</td><td>${data.startDate}</td><td>${data.endDate}</td><td>${data.requestDate}</td></tr>`;
+            const snap = await getDocs(collection(db, "leaves"));
+            if (snap.empty) { container.innerHTML = "لا يوجد إجازات."; return; }
+            let h = `<table><thead><tr><th>رقم الطلب</th><th>ديسكورد</th><th>من</th><th>إلى</th><th>تاريخ التسجيل</th><th>إجراء</th></tr></thead><tbody>`;
+            snap.forEach((d) => {
+                const data = d.data();
+                h += `<tr><td><span class="badge" style="background:#059669;">${data.customId}</span></td><td>${data.discordId}</td><td>${data.startDate}</td><td>${data.endDate}</td><td>${data.requestDate}</td>
+                      <td><button class="small-btn" style="background:var(--danger)" onclick="delDoc('leaves','${d.id}','leaves')">حذف</button></td></tr>`;
             });
-            html += `</tbody></table>`;
-            container.innerHTML = html;
+            container.innerHTML = h + `</tbody></table>`;
         };
     </script>
 </body>
