@@ -18,11 +18,14 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden;}
         
+        /* شاشة تسجيل الدخول */
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 18, 18, 0.95); display: flex; justify-content: center; align-items: center; z-index: 1000; flex-direction: column; }
         .login-box { background-color: var(--panel-bg); padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border);}
         .login-box h2 { color: var(--primary); margin-bottom: 20px; }
         
+        /* واجهة الموقع */
         #app-container { display: none; width: 100%; height: 100%; }
+
         .sidebar { width: 250px; background-color: var(--panel-bg); padding: 20px; border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto;}
         .sidebar h2 { color: var(--primary); text-align: center; font-size: 24px; margin-bottom: 10px;}
         .user-id-display { text-align: center; background: rgba(99, 102, 241, 0.1); color: #818cf8; padding: 8px; border-radius: 6px; font-family: monospace; font-size: 14px; margin-bottom: 20px; border: 1px solid #4f46e5; }
@@ -38,9 +41,12 @@
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); }
         .form-group input, .form-group select { width: 100%; padding: 12px; background-color: var(--bg-color); border: 1px solid var(--border); color: white; border-radius: 6px; outline: none; transition: 0.3s; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 5px rgba(99, 102, 241, 0.5);}
         
         button.submit-btn { width: 100%; padding: 14px; background-color: var(--primary); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px;}
         button.submit-btn:hover { background-color: var(--primary-hover); transform: translateY(-2px);}
+        button.small-btn { padding: 8px 12px; background-color: #059669; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button.small-btn:hover { background-color: #047857; }
         
         .alert { display: none; padding: 15px; border-radius: 6px; margin-top: 20px; text-align: center; font-size: 16px; font-weight: bold;}
         .alert.success { background-color: rgba(5, 150, 105, 0.2); color: #10b981; border: 1px solid #059669; display: block; }
@@ -48,9 +54,14 @@
 
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 12px; text-align: right; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-muted); font-size: 14px; }
+        td { font-size: 15px; }
+        .empty-msg { text-align: center; color: var(--text-muted); padding: 20px; font-style: italic; }
         .badge { background: #374151; padding: 4px 8px; border-radius: 4px; font-family: monospace; color: #60a5fa; font-size: 16px;}
         .role-badge { font-weight: bold; padding: 4px 8px; border-radius: 4px; font-size: 12px; background: rgba(255,255,255,0.1); }
-        
+        a.steam-link { color: var(--primary); text-decoration: none; font-weight: bold; padding: 5px 10px; background: rgba(99, 102, 241, 0.1); border-radius: 4px; }
+        a.steam-link:hover { background: rgba(99, 102, 241, 0.3); }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -89,6 +100,7 @@
         </div>
 
         <div class="content">
+            
             <div id="player-section" class="section">
                 <h3>تسجيل بيانات لاعب جديد</h3>
                 <form id="playerForm">
@@ -102,48 +114,111 @@
                     </div>
                     <div class="form-group">
                         <label>العمر</label>
-                        <input type="number" id="playerAge" required>
+                        <input type="number" id="playerAge" required placeholder="مثال: 20">
                     </div>
                     <div class="form-group">
-                        <label>رابط ستيم</label>
-                        <input type="url" id="steamLink" required>
+                        <label>رابط ستيم (Steam Link)</label>
+                        <input type="url" id="steamLink" required placeholder="https://steamcommunity.com/id/...">
                     </div>
                     <div class="form-group">
-                        <label>أيدي الديسكورد</label>
-                        <input type="text" id="discordId" required>
+                        <label>أيدي الديسكورد (Discord ID)</label>
+                        <input type="text" id="discordId" required placeholder="مثال: 123456789012345678">
                     </div>
                     <button type="submit" class="submit-btn">حفظ في قاعدة البيانات</button>
                     <div id="playerAlert" class="alert"></div>
                 </form>
             </div>
 
-            <div id="list-section" class="section"><h3>قائمة اللاعبين المقبولين</h3><div id="playersTableContainer"></div></div>
+            <div id="list-section" class="section">
+                <h3>قائمة اللاعبين المقبولين</h3>
+                <div id="playersTableContainer">جاري التحميل...</div>
+            </div>
+
             <div id="admin-section" class="section">
-                <h3>إعطاء أو تغيير رتبة</h3>
+                <h3>إعطاء أو تغيير رتبة عبر ID</h3>
                 <form id="adminForm">
-                    <div class="form-group"><label>رقم التعريف (ID)</label><input type="text" id="targetId" required></div>
                     <div class="form-group">
-                        <label>الرتبة</label>
+                        <label>رقم التعريف (ID) الخاص بالشخص</label>
+                        <input type="text" id="targetId" required placeholder="مثال: ID-1234">
+                    </div>
+                    <div class="form-group">
+                        <label>اختر الرتبة الجديدة</label>
                         <select id="targetRole">
-                            <option value="owner">مالك</option>
-                            <option value="moderator">مسؤول تسجيل</option>
-                            <option value="admin">مراقب إداريين</option>
-                            <option value="player">لاعب عادي</option>
+                            <option value="owner">مالك (تحكم كامل)</option>
+                            <option value="moderator">مسؤول تسجيل (إضافة لاعبين وإجازات فقط)</option>
+                            <option value="admin">مراقب إداريين (حضور الإداريين فقط)</option>
+                            <option value="player">لاعب عادي (سحب الصلاحيات)</option>
                         </select>
                     </div>
                     <button type="submit" class="submit-btn">تحديث الرتبة</button>
                     <div id="adminAlert" class="alert"></div>
                 </form>
             </div>
-            <div id="admin-list-section" class="section"><h3>قائمة الإدارة</h3><div id="adminsTableContainer"></div></div>
-            <div id="attendance-section" class="section"><h3>نشاط الإداريين</h3><div id="attendanceTableContainer"></div></div>
-            <div id="leave-section" class="section"><h3>سجل الإجازات</h3><div id="leaveTableContainer"></div></div>
+
+            <div id="admin-list-section" class="section">
+                <h3>قائمة الإدارة (Admins)</h3>
+                <div id="adminsTableContainer">جاري التحميل...</div>
+            </div>
+
+            <div id="attendance-section" class="section">
+                <h3>تسجيل نشاط إداري جديد</h3>
+                <form id="adminActivityForm">
+                    <div class="form-group">
+                        <label>اسم الإداري</label>
+                        <input type="text" id="activityAdminName" required placeholder="اكتب اسم الإداري هنا">
+                    </div>
+                    <div class="form-group">
+                        <label>حالة الحضور</label>
+                        <select id="activityAttendance">
+                            <option value="حضر">حضر</option>
+                            <option value="لم يحضر">لم يحضر</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>التاريخ</label>
+                        <input type="date" id="activityDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>عدد المقابلات التي قام بها</label>
+                        <input type="number" id="activityInterviews" required placeholder="مثال: 5" min="0" value="0">
+                    </div>
+                    <button type="submit" class="submit-btn">حفظ وإصدار ID</button>
+                    <div id="adminActivityAlert" class="alert"></div>
+                </form>
+
+                <h3 style="margin-top: 40px;">سجل نشاط الإداريين السابق</h3>
+                <div id="attendanceTableContainer">جاري التحميل...</div>
+            </div>
+
+            <div id="leave-section" class="section">
+                <h3>تسجيل إجازة جديدة</h3>
+                <form id="leaveForm">
+                    <div class="form-group">
+                        <label>أيدي الديسكورد (Discord ID)</label>
+                        <input type="text" id="leaveDiscordId" required placeholder="مثال: 123456789012345678">
+                    </div>
+                    <div class="form-group">
+                        <label>من تاريخ</label>
+                        <input type="date" id="leaveStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>إلى تاريخ</label>
+                        <input type="date" id="leaveEndDate" required>
+                    </div>
+                    <button type="submit" class="submit-btn">حفظ الإجازة وإصدار رقم الطلب</button>
+                    <div id="leaveAlert" class="alert"></div>
+                </form>
+
+                <h3 style="margin-top: 40px;">سجل الإجازات</h3>
+                <div id="leaveTableContainer">جاري التحميل...</div>
+            </div>
+
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCwbx5ZaNFUzOSptSdrkQFuzuFBg9bnn4c",
@@ -157,22 +232,45 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
         let currentUser = null;
 
-        // توليد الكود الخاص بالجهاز وحفظه
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(event && event.target) {
+                event.target.classList.add('active');
+            }
+        };
+
+        function showAlert(elementId, message, type="success") {
+            const alert = document.getElementById(elementId);
+            alert.textContent = message;
+            alert.className = `alert ${type}`;
+            setTimeout(() => { alert.style.display = 'none'; alert.className = "alert"; }, 6000);
+        }
+
+        // توليد الكود الخاص بالجهاز والدخول التلقائي
         document.addEventListener("DOMContentLoaded", () => {
             let myCode = localStorage.getItem('myUserCode');
             if (!myCode) {
                 myCode = 'ID-' + Math.floor(1000 + Math.random() * 9000);
                 localStorage.setItem('myUserCode', myCode);
             }
-            document.getElementById('myGeneratedCode').innerText = myCode;
-            document.getElementById('loginIdInput').value = myCode;
+            if(document.getElementById('myGeneratedCode')) document.getElementById('myGeneratedCode').innerText = myCode;
+            if(document.getElementById('loginIdInput')) document.getElementById('loginIdInput').value = myCode;
+
+            // الدخول التلقائي إذا كان مسجل مسبقاً
+            if(localStorage.getItem('isLoggedIn') === 'true') {
+                checkLogin();
+            }
         });
 
         window.checkLogin = async function() {
             const inputId = document.getElementById('loginIdInput').value.trim();
             const alertBox = document.getElementById('loginAlert');
+            
             if(!inputId) return;
 
             alertBox.textContent = "جاري التحقق...";
@@ -180,6 +278,7 @@
 
             if(inputId === "OWNER-999") {
                 currentUser = { role: 'owner', id: 'OWNER-999' };
+                localStorage.setItem('isLoggedIn', 'true');
                 unlockDashboard();
                 return;
             }
@@ -187,65 +286,243 @@
             try {
                 const q = query(collection(db, "users"), where("customId", "==", inputId));
                 const querySnapshot = await getDocs(q);
+
                 if (querySnapshot.empty) {
                     alertBox.textContent = "هذا الـ ID غير مسجل أو ليس لديك صلاحية!";
                     alertBox.className = "alert error";
+                    localStorage.setItem('isLoggedIn', 'false');
                     return;
                 }
+
                 const userData = querySnapshot.docs[0].data();
+                
                 if(userData.role === 'player') {
-                    alertBox.textContent = "ليس لديك صلاحيات دخول.";
+                    alertBox.textContent = "ليس لديك صلاحيات الدخول لهذه اللوحة.";
                     alertBox.className = "alert error";
+                    localStorage.setItem('isLoggedIn', 'false');
                     return;
                 }
+
                 currentUser = { role: userData.role, id: userData.customId };
+                localStorage.setItem('isLoggedIn', 'true');
                 unlockDashboard();
-            } catch (e) { alertBox.className = "alert error"; }
+
+            } catch (error) {
+                alertBox.textContent = "حدث خطأ: " + error.message;
+                alertBox.className = "alert error";
+            }
         };
 
         function unlockDashboard() {
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('app-container').style.display = 'flex';
-            document.getElementById('currentUserDisplay').innerHTML = `ID: <strong>${currentUser.id}</strong>`;
+            document.getElementById('currentUserDisplay').innerHTML = `تسجيل الدخول كـ: <br> <strong>${currentUser.id}</strong>`;
             document.querySelectorAll('.nav-btn').forEach(btn => btn.style.display = 'none');
 
             if(currentUser.role === 'owner') {
                 document.querySelectorAll('.nav-btn').forEach(btn => btn.style.display = 'block');
                 switchTab('player-section');
-            } else if (currentUser.role === 'moderator') {
+            } 
+            else if (currentUser.role === 'moderator') {
                 document.getElementById('btn-add-player').style.display = 'block';
                 document.getElementById('btn-leaves').style.display = 'block';
                 switchTab('player-section');
-            } else if (currentUser.role === 'admin') {
+            }
+            else if (currentUser.role === 'admin') {
                 document.getElementById('btn-attendance').style.display = 'block';
+                document.getElementById('btn-list-admins').style.display = 'block';
                 switchTab('attendance-section');
+                loadAttendanceList();
             }
         }
 
+        window.logout = function() {
+            localStorage.setItem('isLoggedIn', 'false');
+            location.reload();
+        };
+
+        // إضافة لاعب
         document.getElementById('playerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const customId = document.getElementById('playerCustomId').value.trim();
+            const pName = document.getElementById('playerName').value;
             try {
                 await addDoc(collection(db, "users"), {
                     customId: customId,
-                    name: document.getElementById('playerName').value,
+                    name: pName,
                     age: document.getElementById('playerAge').value,
                     steam: document.getElementById('steamLink').value,
                     discord: document.getElementById('discordId').value,
                     role: 'player',
                     date: new Date().toLocaleDateString('ar-EG')
                 });
-                alert('تم حفظ اللاعب بنجاح بالكود: ' + customId);
+                showAlert('playerAlert', `تم حفظ اللاعب [ ${pName} ] بالكود: ${customId}`);
                 this.reset();
-            } catch (e) { alert('خطأ في الحفظ'); }
+            } catch (error) {
+                showAlert('playerAlert', 'حدث خطأ: ' + error.message, 'error');
+            }
         });
 
-        // دوال التبديل والتحميل (switchTab, loadPlayersList, etc.) تظل كما هي..
-        window.switchTab = function(id) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        // قائمة اللاعبين
+        window.loadPlayersList = async function() {
+            const container = document.getElementById('playersTableContainer');
+            container.innerHTML = "جاري جلب البيانات...";
+            const q = query(collection(db, "users"), where("role", "==", "player"));
+            const querySnapshot = await getDocs(q);
+            if (querySnapshot.empty) { container.innerHTML = '<div class="empty-msg">لا يوجد لاعبين.</div>'; return; }
+
+            let html = `<table><thead><tr><th>ID</th><th>الاسم</th><th>العمر</th><th>الديسكورد</th><th>ستيم</th><th>إجراء</th></tr></thead><tbody>`;
+            querySnapshot.forEach((document) => {
+                const data = document.data();
+                html += `<tr>
+                            <td><span class="badge">${data.customId}</span></td>
+                            <td>${data.name}</td><td>${data.age}</td><td>${data.discord}</td>
+                            <td><a href="${data.steam}" target="_blank" class="steam-link">الرابط</a></td>
+                            <td><button class="small-btn" style="background-color: var(--danger);" onclick="deleteUser('${document.id}')">حذف</button></td>
+                         </tr>`;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
         };
-        window.logout = () => location.reload();
+
+        // إدارة الرتب
+        document.getElementById('adminForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const targetId = document.getElementById('targetId').value.trim();
+            const newRole = document.getElementById('targetRole').value;
+            
+            const q = query(collection(db, "users"), where("customId", "==", targetId));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                showAlert('adminAlert', 'لم يتم العثور على أي شخص بهذا الـ ID', 'error');
+                return;
+            }
+
+            const userDoc = querySnapshot.docs[0];
+            await updateDoc(doc(db, "users", userDoc.id), { role: newRole });
+            showAlert('adminAlert', `تم تحديث رتبة صاحب الـ ${targetId} بنجاح!`);
+            this.reset();
+        });
+
+        // قائمة الإدارة
+        window.loadAdminsList = async function() {
+            const container = document.getElementById('adminsTableContainer');
+            container.innerHTML = "جاري جلب البيانات...";
+            
+            const q = query(collection(db, "users"), where("role", "!=", "player"));
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) { container.innerHTML = '<div class="empty-msg">لا يوجد إداريين.</div>'; return; }
+
+            const roleNames = {
+                'owner': 'مالك',
+                'admin': 'مراقب إداريين',
+                'moderator': 'مسؤول تسجيل'
+            };
+
+            let html = `<table><thead><tr><th>ID</th><th>الاسم</th><th>الديسكورد</th><th>الرتبة</th><th>إجراء</th></tr></thead><tbody>`;
+            querySnapshot.forEach((document) => {
+                const data = document.data();
+                html += `<tr>
+                            <td><span class="badge">${data.customId}</span></td>
+                            <td>${data.name}</td>
+                            <td>${data.discord}</td>
+                            <td><span class="role-badge">${roleNames[data.role] || data.role}</span></td>
+                            <td><button class="small-btn" style="background-color: var(--danger);" onclick="deleteUser('${document.id}')">حذف</button></td>
+                         </tr>`;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        };
+
+        // دالة الحذف الشاملة
+        window.deleteUser = async function(docId) {
+            if(confirm('هل أنت متأكد من أنك تريد حذف هذا الشخص نهائياً من قاعدة البيانات؟')) {
+                try {
+                    await deleteDoc(doc(db, "users", docId));
+                    alert('تم الحذف بنجاح!');
+                    if(document.getElementById('list-section').classList.contains('active')) loadPlayersList();
+                    if(document.getElementById('admin-list-section').classList.contains('active')) loadAdminsList();
+                } catch (error) {
+                    alert('حدث خطأ أثناء الحذف: ' + error.message);
+                }
+            }
+        };
+
+        // نشاط الإداريين
+        function generateShortIdActivity() {
+            return 'ACT-' + Math.floor(1000 + Math.random() * 9000);
+        }
+
+        document.getElementById('adminActivityForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const shortId = generateShortIdActivity(); 
+            try {
+                await addDoc(collection(db, "admin_activities"), {
+                    customId: shortId,
+                    name: document.getElementById('activityAdminName').value,
+                    attendance: document.getElementById('activityAttendance').value,
+                    date: document.getElementById('activityDate').value,
+                    interviews: parseInt(document.getElementById('activityInterviews').value)
+                });
+                showAlert('adminActivityAlert', `تم الحفظ بنجاح! الـ ID للعملية: [ ${shortId} ]`);
+                this.reset();
+                loadAttendanceList(); 
+            } catch (error) {
+                showAlert('adminActivityAlert', 'خطأ: ' + error.message, 'error');
+            }
+        });
+
+        window.loadAttendanceList = async function() {
+            const container = document.getElementById('attendanceTableContainer');
+            container.innerHTML = "جاري جلب البيانات...";
+            const querySnapshot = await getDocs(collection(db, "admin_activities"));
+            if (querySnapshot.empty) { container.innerHTML = '<div class="empty-msg">لا يوجد سجلات.</div>'; return; }
+
+            let html = `<table><thead><tr><th>ID العملية</th><th>الاسم</th><th>الحضور</th><th>التاريخ</th><th>المقابلات</th></tr></thead><tbody>`;
+            querySnapshot.forEach((document) => {
+                const data = document.data();
+                html += `<tr><td><span class="badge">${data.customId}</span></td><td>${data.name}</td><td>${data.attendance}</td><td>${data.date}</td><td>${data.interviews}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        };
+
+        // نظام الإجازات
+        document.getElementById('leaveForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const shortId = 'LV-' + Math.floor(1000 + Math.random() * 9000);
+            try {
+                await addDoc(collection(db, "leaves"), {
+                    customId: shortId,
+                    discordId: document.getElementById('leaveDiscordId').value,
+                    startDate: document.getElementById('leaveStartDate').value,
+                    endDate: document.getElementById('leaveEndDate').value,
+                    requestDate: new Date().toLocaleDateString('ar-EG')
+                });
+                showAlert('leaveAlert', `تم حفظ الإجازة! رقم الطلب: [ ${shortId} ]`);
+                this.reset();
+                loadLeaveList(); 
+            } catch (error) {
+                showAlert('leaveAlert', 'خطأ: ' + error.message, 'error');
+            }
+        });
+
+        window.loadLeaveList = async function() {
+            const container = document.getElementById('leaveTableContainer');
+            container.innerHTML = "جاري جلب البيانات...";
+            const querySnapshot = await getDocs(collection(db, "leaves"));
+            if (querySnapshot.empty) { container.innerHTML = '<div class="empty-msg">لا يوجد إجازات.</div>'; return; }
+
+            let html = `<table><thead><tr><th>رقم الطلب</th><th>أيدي الديسكورد</th><th>من تاريخ</th><th>إلى تاريخ</th><th>تاريخ التسجيل</th></tr></thead><tbody>`;
+            querySnapshot.forEach((document) => {
+                const data = document.data();
+                html += `<tr><td><span class="badge" style="background:#059669;">${data.customId}</span></td><td>${data.discordId}</td><td>${data.startDate}</td><td>${data.endDate}</td><td>${data.requestDate}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        };
     </script>
 </body>
 </html>
